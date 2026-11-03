@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### 구현 순서 (PRD 12)
 1. Next.js 초기화, Clerk, 보호 라우트 (완료)
-2. Neon, Drizzle 스키마와 마이그레이션
+2. Neon, Drizzle 스키마와 마이그레이션 (완료)
 3. 카테고리 CRUD
 4. RSS 수집, 중복 제거, Claude 처리
 5. 카드 UI, 탭, 카테고리 필터
@@ -65,16 +65,17 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 - 가져온 뉴스는 이 단계에서 **DB에 저장하지 않는다**(새로고침하면 사라져도 됨).
 - 중복 기준은 같은 URL(GUID)뿐. 의미상 중복 판정은 하지 않는다.
 - 이미 저장한 기사는 다시 가져와도 '저장됨'으로 표시하고 중복 저장하지 않는다.
-- Claude 처리: 제목은 한국어 번역, 요약은 RSS 내용 기반 한국어 3~4줄(원문 페이지 스크래핑 금지). 카테고리는 사용자의 기존 카테고리를 우선 재사용하고, 맞는 것이 없을 때만 새 카테고리를 제안해 자동 추가한다.
+- Claude 처리: 제목은 한국어 번역, 요약은 RSS 내용 기반 한국어 3~4줄(원문 페이지 스크래핑 금지). 카테고리는 사용자의 기존 카테고리를 우선 재사용하고, 맞는 것이 없을 때만 새 카테고리를 제안한다. 새 카테고리는 가져오기 단계에서 DB에 만들지 않고, 'Notion 저장' 시점에 `categories`에 자동 추가한다.
 
 ### 저장 흐름 (PRD 5.3, 5.6, 8-2)
 - 카드의 'Notion 저장' 버튼 하나로 Notion과 DB에 함께 저장한다. 별도의 '저장하기' 버튼은 없다.
 - Notion MCP 서버로 지정한 기존 Notion 데이터베이스에 뉴스마다 행을 추가한다(제목, 카테고리, 요약, 원문 링크).
-- Notion 저장이 성공하면 **같은 요청에서** Neon `articles`에도 저장한다(필요 시 `categories` 추가, `notion_page_url` 기록).
+- Notion 저장이 성공하면 **같은 요청에서** Neon `articles`에도 저장한다(새 카테고리면 `categories` 추가, `notion_page_url` 기록).
 
-### 데이터 모델 (PRD 7, 초안)
+### 데이터 모델 (PRD 7, Neon 반영 완료)
+정의는 `src/db/schema.ts`, 마이그레이션은 `drizzle/`. `npx drizzle-kit generate` / `migrate`로 관리한다.
 - `categories`: id, user_id, name, created_at — `(user_id, name)` 고유
-- `articles`: id, user_id, source, url, original_title, title_ko, summary_ko, category_id, published_at, saved_at, notion_page_url — `(user_id, url)` 고유
+- `articles`: id, user_id, source, url, original_title, title_ko, summary_ko, category_id, published_at, saved_at, notion_page_url — `(user_id, url)` 고유. `category_id`는 NOT NULL, `categories`를 `on delete restrict`로 참조.
 
 ### 카테고리 관리 (PRD 5.5, 8-3)
 - 목록 조회, 추가, 이름 수정, 삭제를 언제든 가능.
