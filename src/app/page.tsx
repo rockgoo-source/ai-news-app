@@ -1,21 +1,10 @@
-import { Show, UserButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import { AuthGate } from "@/components/auth-gate";
 
-export default function Home() {
-  return (
-    <>
-      <Show when="signed-out">
-        <AuthGate />
-      </Show>
-      <Show when="signed-in">
-        <header className="flex items-center justify-between border-b border-zinc-200 px-6 py-3 dark:border-zinc-800">
-          <span className="font-semibold">AI 뉴스 카드</span>
-          <UserButton />
-        </header>
-        <main className="flex-1 p-6">
-          {/* 5단계에서 뉴스 카드 UI가 들어갈 자리 */}
-        </main>
-      </Show>
-    </>
-  );
+// 메인 화면은 /dashboard. 로그인했으면 바로 이동하고, 아니면 로그인 모달을 연다.
+export default async function Home() {
+  const { userId } = await auth();
+  if (userId) redirect("/dashboard");
+  return <AuthGate />;
 }
