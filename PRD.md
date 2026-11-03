@@ -61,9 +61,13 @@
 | Notion 저장 | Notion MCP 서버 |
 | 배포 | Vercel |
 
-## 7. 데이터 모델 (초안)
-- `categories`: id, user_id, name, created_at (user_id + name 고유)
+## 7. 데이터 모델
+Neon에 반영 완료(`src/db/schema.ts`, 마이그레이션 `drizzle/0000_*.sql`).
+- `categories`: id, user_id, name, created_at (user_id + name 고유). created_at 기본값은 now().
 - `articles`: id, user_id, source, url, original_title, title_ko, summary_ko, category_id, published_at, saved_at, notion_page_url (user_id + url 고유)
+  - `category_id`는 NOT NULL이며 `categories.id`를 `on delete restrict`로 참조한다. 5.5의 "저장된 기사가 있는 카테고리는 삭제 불가" 규칙을 DB에서도 강제한다.
+  - `published_at`과 `notion_page_url`만 null을 허용한다. `saved_at` 기본값은 now()이다.
+  - `(user_id, category_id)` 인덱스가 있다.
 
 ## 8. 주요 흐름
 1. **가져오기**: 버튼 → 서버에서 RSS 파싱 → URL 중복 제거(저장된 기사 대조) → Claude 호출(번역·요약·카테고리) → 카드 표시
@@ -85,8 +89,8 @@
 - Notion MCP 연결 방식(원격 OAuth 또는 로컬 서버와 통합 토큰)
 
 ## 12. 구현 순서
-1. Next.js 초기화, Clerk, 보호 라우트
-2. Neon, Drizzle 스키마와 마이그레이션
+1. Next.js 초기화, Clerk, 보호 라우트 (완료)
+2. Neon, Drizzle 스키마와 마이그레이션 (완료)
 3. 카테고리 CRUD
 4. RSS 수집, 중복 제거, Claude 처리
 5. 카드 UI, 탭, 카테고리 필터
