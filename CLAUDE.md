@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 상태
 
-`PRD.md`(한국어)가 요구사항의 기준 문서다. 현재는 `create-next-app` 기본 템플릿(`src/app`의 layout/page/globals.css/favicon 그대로) + `@clerk/nextjs` 설치 + 빈 `.env.local`만 있고, 앱 코드는 아직 없다. 필요한 패키지(Drizzle, Neon, Anthropic SDK, RSS 파서 등)는 해당 단계에서 설치한다.
+`PRD.md`(한국어)가 요구사항의 기준 문서다. 현재는 `create-next-app` 기본 템플릿에 Clerk 로그인(모달)만 붙은 상태이고, 뉴스 수집·저장 등 앱 기능은 아직 없다. 필요한 패키지(Drizzle, Neon, Anthropic SDK, RSS 파서 등)는 해당 단계에서 설치한다.
 
-**1단계 진행 상황**: Next.js 초기화 완료, `@clerk/nextjs` 설치 완료, `.env.local`에 Clerk 변수 틀 생성(키 값은 비어 있음 — 사용자가 Clerk 대시보드에서 발급해 입력해야 함). 남은 작업: `proxy.ts`(보호 라우트), `ClerkProvider`, `/sign-in`·`/sign-up` 페이지. 사용자가 "코드 작성 금지"라고 한 동안은 코드 파일을 만들지 않는다.
+**1단계 완료(`auth` 브랜치)**: Next.js 초기화, Clerk 연동(`src/proxy.ts`, `ClerkProvider`, 로그인 모달) 완료. 로그인은 `/sign-in`·`/sign-up` 페이지 없이 **모달**로만 처리한다. 미로그인 접속 시 `AuthGate`(`src/components/auth-gate.tsx`)가 로그인 모달을 자동으로 열고, 화면 분기는 `<Show when="signed-in|signed-out">`로 한다(Clerk 7에서 `SignedIn`/`SignedOut`은 제거됨). `proxy.ts`는 `/api/*`만 `auth.protect()`로 보호하고 페이지는 공개한다. 새 API 라우트는 `createRouteMatcher` 외에 라우트 안에서도 `auth()`로 `userId`를 확인한다.
 
 ### 구현 순서 (PRD 12)
-1. Next.js 초기화, Clerk, 보호 라우트 (진행 중)
+1. Next.js 초기화, Clerk, 보호 라우트 (완료)
 2. Neon, Drizzle 스키마와 마이그레이션
 3. 카테고리 CRUD
 4. RSS 수집, 중복 제거, Claude 처리
@@ -52,7 +52,7 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 ### 인증·보안 (PRD 3, 9)
 - 로그인한 사용자만 사용 가능. 앱 실행 시 Clerk 로그인이 먼저 필요하다.
 - 저장 뉴스와 카테고리는 Clerk `user_id` 기준으로 사용자별 분리. **모든 API는 Clerk 인증을 확인하고 자기 `user_id`의 데이터만 접근**한다.
-- API 키(Claude, Notion, Neon, Clerk)는 환경 변수(`.env.local`)로 관리하고 클라이언트에 노출하지 않는다 (`NEXT_PUBLIC_`은 Clerk publishable key만). Clerk 변수: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up` (`.env*`는 `.gitignore`로 제외됨).
+- API 키(Claude, Notion, Neon, Clerk)는 환경 변수(`.env.local`)로 관리하고 클라이언트에 노출하지 않는다 (`NEXT_PUBLIC_`은 Clerk publishable key만). Clerk 변수: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` (`.env*`는 `.gitignore`로 제외됨). 모달 방식이므로 `NEXT_PUBLIC_CLERK_SIGN_IN_URL`/`SIGN_UP_URL`은 설정하지 않는다(없는 경로로 이동해 404가 난다). 시크릿 키는 대시보드의 마스킹된 값(`…`)이 아니라 전체 값을 넣는다.
 - Claude 호출은 서버에서만 수행하고, 응답은 JSON으로 받아 검증한다.
 
 ### 뉴스 소스 (PRD 4)
