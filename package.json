@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.4.0",
     "@clerk/nextjs": "^7.9.23",
     "@neondatabase/serverless": "^1.2.0",
     "dotenv": "^18.0.9",
@@ -16,7 +17,8 @@
     "next": "16.4.4",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "rss-parser": "^3.13.0"
+    "rss-parser": "^3.13.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

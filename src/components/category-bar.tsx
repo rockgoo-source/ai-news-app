@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AddCategoryButton } from "@/components/add-category-button";
 
 type CategoryChip = { id: number; name: string };
 
@@ -38,16 +39,7 @@ export function CategoryBar({
           {c.name}
         </Link>
       ))}
-      {/* 카테고리 CRUD(3단계) 구현 전까지는 비활성 */}
-      <button
-        type="button"
-        disabled
-        aria-label="카테고리 추가"
-        title="준비 중"
-        className="inline-flex cursor-not-allowed items-center gap-1 rounded-full border border-dashed border-zinc-300 px-3.5 py-1.5 text-sm text-zinc-500 opacity-60 dark:border-zinc-700"
-      >
-        <span aria-hidden>＋</span> 추가
-      </button>
+      <AddCategoryButton />
     </nav>
   );
 }

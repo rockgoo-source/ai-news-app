@@ -24,10 +24,15 @@ export function FetchNewsButton() {
         return;
       }
       const failed: string[] = data.failedSources ?? [];
-      const base = `새 기사 ${data.inserted}개 저장, 중복 ${data.skipped}개 건너뜀`;
+      const reclassified = data.reclassified ?? 0;
+      const base = `새 기사 ${data.inserted}개 저장, 중복 ${data.skipped}개 건너뜀, ${data.processed}개 번역${reclassified > 0 ? `, ${reclassified}개 재분류` : ""}`;
+      const problems: string[] = [];
+      if (failed.length > 0) problems.push(`${failed.join(", ")} 실패`);
+      if (data.processError) problems.push(data.processError);
+      else if (data.processFailed > 0) problems.push(`${data.processFailed}개 처리 실패`);
       setFeedback(
-        failed.length > 0
-          ? { kind: "error", text: `${base} (${failed.join(", ")} 실패)` }
+        problems.length > 0
+          ? { kind: "error", text: `${base} (${problems.join(", ")})` }
           : { kind: "ok", text: base },
       );
       router.refresh();

@@ -39,6 +39,8 @@ export const articles = pgTable(
     savedAt: timestamp("saved_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    // Claude가 제안한 새 카테고리 이름. 'Notion 저장' 시점에 categories에 추가하고 비운다.
+    suggestedCategory: text("suggested_category"),
     notionPageUrl: text("notion_page_url"),
   },
   (t) => [
