@@ -17,15 +17,16 @@
 | TechCrunch AI | https://techcrunch.com/category/artificial-intelligence/feed/ |
 | The Verge AI | https://www.theverge.com/rss/ai-artificial-intelligence/index.xml |
 
-- '뉴스 가져오기' 한 번에 사이트당 최신 5개(총 약 10개)를 가져온다.
+- '뉴스 가져오기' 한 번에 사이트별 **최근 24시간** 기사를 가져온다.
 
 ## 5. 기능 요구사항
 
 ### 5.1 뉴스 가져오기
-- '뉴스 가져오기' 버튼을 누르면 RSS를 수집하고, 중복을 제거한 뒤 Claude로 번역·요약·분류해 카드로 표시한다.
-- 가져온 뉴스는 이 단계에서 DB에 저장하지 않는다(새로고침하면 사라져도 됨).
+- '뉴스 가져오기' 버튼을 누르면 최근 24시간 RSS 기사를 수집하고, 중복을 제외한 기사를 `articles`에 바로 저장한 뒤 카드로 표시한다.
+- 번역·요약·분류(5.2)는 이후 단계에서 Claude가 채운다. 그 전에는 `title_ko`·`summary_ko`·`category_id`가 비어 있고, 카드는 원문 제목과 '미분류'로 표시한다.
+- 'DB에 있음'과 'Notion에 저장됨'은 다르다. Notion 저장 여부는 `notion_page_url` 유무로 판단한다.
 - 중복 기준은 같은 URL(GUID)만이다. 의미상 중복 판정은 하지 않는다.
-- 이미 저장한 기사는 다시 가져와도 '저장됨'으로 표시하고 중복 저장하지 않는다.
+- 이미 저장한 기사는 다시 가져와도 중복 저장하지 않는다(`(user_id, url)` 고유 제약 + `ON CONFLICT DO NOTHING`).
 
 ### 5.2 번역·요약·분류 (Claude Sonnet 5.5)
 - 제목은 한국어로 번역한다.
@@ -62,15 +63,15 @@
 | 배포 | Vercel |
 
 ## 7. 데이터 모델
-Neon에 반영 완료(`src/db/schema.ts`, 마이그레이션 `drizzle/0000_*.sql`).
+Neon에 반영 완료(`src/db/schema.ts`, 마이그레이션 `drizzle/0000_*.sql`, `0001_*.sql`).
 - `categories`: id, user_id, name, created_at (user_id + name 고유). created_at 기본값은 now().
 - `articles`: id, user_id, source, url, original_title, title_ko, summary_ko, category_id, published_at, saved_at, notion_page_url (user_id + url 고유)
-  - `category_id`는 NOT NULL이며 `categories.id`를 `on delete restrict`로 참조한다. 5.5의 "저장된 기사가 있는 카테고리는 삭제 불가" 규칙을 DB에서도 강제한다.
-  - `published_at`과 `notion_page_url`만 null을 허용한다. `saved_at` 기본값은 now()이다.
+  - `category_id`는 `categories.id`를 `on delete restrict`로 참조한다. 가져오기 직후에는 분류 전이라 NULL을 허용한다. 5.5의 "저장된 기사가 있는 카테고리는 삭제 불가" 규칙을 DB에서도 강제한다.
+  - `title_ko`·`summary_ko`·`category_id`(Claude 처리 전), `published_at`, `notion_page_url`이 null을 허용한다. `saved_at` 기본값은 now()이다.
   - `(user_id, category_id)` 인덱스가 있다.
 
 ## 8. 주요 흐름
-1. **가져오기**: 버튼 → 서버에서 RSS 파싱 → URL 중복 제거(저장된 기사 대조) → Claude 호출(번역·요약·카테고리) → 카드 표시
+1. **가져오기**: 버튼 → 서버에서 RSS 파싱(최근 24시간) → `articles`에 저장(URL 중복은 건너뜀) → 카드 표시. (Claude 번역·요약·분류는 이후 단계)
 2. **저장**: 'Notion 저장' → Notion MCP로 DB 행 추가 → articles 저장(새 카테고리면 이때 categories에 추가)
 3. **카테고리 관리**: 목록 조회, 추가, 이름 수정, 삭제(기사가 없을 때만)
 
