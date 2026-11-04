@@ -48,9 +48,18 @@ export default async function DashboardPage({
 
   const [categoryRows, rows] = await Promise.all([
     db
-      .select({ id: categories.id, name: categories.name })
+      .select({
+        id: categories.id,
+        name: categories.name,
+        // Notion에 저장한 기사 수. 0보다 크면 삭제할 수 없다.
+        savedCount: sql<number>`count(${articles.id}) filter (where ${articles.notionPageUrl} is not null)`.mapWith(
+          Number,
+        ),
+      })
       .from(categories)
+      .leftJoin(articles, eq(articles.categoryId, categories.id))
       .where(eq(categories.userId, userId))
+      .groupBy(categories.id)
       .orderBy(asc(categories.createdAt)),
     db
       .select({

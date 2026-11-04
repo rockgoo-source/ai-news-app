@@ -78,7 +78,7 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 - `articles`: id, user_id, source, url, original_title, title_ko, summary_ko, category_id, suggested_category, published_at, saved_at, notion_page_url — `(user_id, url)` 고유. `title_ko`·`summary_ko`·`category_id`는 Claude 처리 전까지 NULL 허용(`0001` 마이그레이션). `category_id`는 `categories`를 `on delete restrict`로 참조.
 
 ### 카테고리 관리 (PRD 5.5, 8-3)
-- 구현됨: 추가(`POST /api/categories`, 이름 trim·30자 제한·중복 409)와 기본 카테고리 시드(`src/lib/default-categories.ts`, 카테고리가 0개인 사용자의 대시보드 진입 시 생성). 이름 수정·삭제는 미구현.
+- 구현됨: 추가(`POST /api/categories`, 이름 trim·30자 제한·중복 409)와 기본 카테고리 시드(`src/lib/default-categories.ts`, 카테고리가 0개인 사용자의 대시보드 진입 시 생성). 수정·삭제는 `PATCH`/`DELETE /api/categories/[id]`(본인 것만). 삭제는 Notion에 저장한 기사(`notion_page_url` 있음)가 있으면 409, 없으면 해당 카테고리의 미저장 기사를 `category_id = NULL`로 돌린 뒤 삭제한다(FK `restrict` 때문에 필요, 다음 가져오기 때 재분류).
 - 목록 조회, 추가, 이름 수정, 삭제를 언제든 가능.
 - 이름 수정은 해당 기사에 그대로 반영된다(기사는 `category_id`로 참조).
 - 저장된 기사가 있는 카테고리는 삭제 불가. 기사가 없는 카테고리만 삭제 가능.

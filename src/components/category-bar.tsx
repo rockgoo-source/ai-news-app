@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { AddCategoryButton } from "@/components/add-category-button";
+import { CategoryChip } from "@/components/category-chip";
 
-type CategoryChip = { id: number; name: string };
+type CategoryItem = { id: number; name: string; savedCount: number };
 
 const chipBase =
   "max-w-[12rem] truncate rounded-full px-3.5 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600";
@@ -14,7 +15,7 @@ export function CategoryBar({
   categories,
   selectedId,
 }: {
-  categories: CategoryChip[];
+  categories: CategoryItem[];
   selectedId: number | null;
 }) {
   return (
@@ -30,14 +31,13 @@ export function CategoryBar({
         전체
       </Link>
       {categories.map((c) => (
-        <Link
+        <CategoryChip
           key={c.id}
-          href={`/dashboard?category=${c.id}`}
-          aria-current={selectedId === c.id ? "page" : undefined}
-          className={`${chipBase} ${selectedId === c.id ? chipActive : chipIdle}`}
-        >
-          {c.name}
-        </Link>
+          id={c.id}
+          name={c.name}
+          selected={selectedId === c.id}
+          savedCount={c.savedCount}
+        />
       ))}
       <AddCategoryButton />
     </nav>
