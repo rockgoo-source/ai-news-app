@@ -29,11 +29,12 @@ export const articles = pgTable(
     source: text("source").notNull(),
     url: text("url").notNull(),
     originalTitle: text("original_title").notNull(),
-    titleKo: text("title_ko").notNull(),
-    summaryKo: text("summary_ko").notNull(),
-    categoryId: integer("category_id")
-      .notNull()
-      .references(() => categories.id, { onDelete: "restrict" }),
+    // 가져오기 시점에는 비어 있고, 이후 Claude 처리 단계에서 채운다.
+    titleKo: text("title_ko"),
+    summaryKo: text("summary_ko"),
+    categoryId: integer("category_id").references(() => categories.id, {
+      onDelete: "restrict",
+    }),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     savedAt: timestamp("saved_at", { withTimezone: true })
       .notNull()
