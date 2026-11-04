@@ -1,0 +1,1 @@
+ALTER TABLE "articles" ADD COLUMN "suggested_category" text;

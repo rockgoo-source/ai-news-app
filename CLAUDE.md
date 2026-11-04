@@ -61,11 +61,11 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 - '뉴스 가져오기' 한 번에 사이트별 **최근 24시간** 기사(`src/lib/rss.ts`, `rss-parser`).
 
 ### 가져오기 흐름 (PRD 5.1, 5.2, 8-1)
-버튼 → 서버에서 RSS 파싱(최근 24시간) → `articles` 저장(URL 중복은 건너뜀) → 카드 표시. Claude 호출(번역·요약·분류)은 이후 단계.
-- 가져온 뉴스는 `POST /api/articles/fetch`에서 **바로 `articles`에 저장**한다(`onConflictDoNothing`). 번역·요약·분류(Claude)는 이후 단계라 `title_ko`·`summary_ko`·`category_id`는 NULL로 두고, 카드는 원문 제목과 '미분류'로 표시한다.
+버튼 → 서버에서 RSS 파싱(최근 24시간) → `articles` 저장(URL 중복은 건너뜀) → 카드 표시. Claude 호출(번역·요약·분류)은 같은 요청에서 이어서 수행.
+- 가져온 뉴스는 `POST /api/articles/fetch`에서 **먼저 `articles`에 저장**한다(`onConflictDoNothing`). 이어서 이번 RSS에 있는 기사 중 `title_ko`가 NULL인 것(최대 30개, 이전 실패분 포함)을 `src/lib/process-articles.ts`가 10개씩 배치로 Claude(`src/lib/claude.ts`, `ANTHROPIC_API_KEY`)에 보내 구조화 JSON(zod 검증)으로 받아 `title_ko`·`summary_ko`·`category_id`/`suggested_category`를 채운다. Claude가 실패해도 기사는 남고 NULL이면 카드는 원문 제목과 '미분류'로 표시한다.
 - 중복 기준은 같은 URL(GUID)뿐. 의미상 중복 판정은 하지 않는다.
 - 이미 저장한 기사는 다시 가져와도 중복 저장하지 않는다. '저장됨' 표시는 Notion 저장(`notion_page_url` 존재) 기준이다.
-- Claude 처리: 제목은 한국어 번역, 요약은 RSS 내용 기반 한국어 3~4줄(원문 페이지 스크래핑 금지). 카테고리는 사용자의 기존 카테고리를 우선 재사용하고, 맞는 것이 없을 때만 새 카테고리를 제안한다. 새 카테고리는 가져오기 단계에서 DB에 만들지 않고, 'Notion 저장' 시점에 `categories`에 자동 추가한다.
+- Claude 처리: 제목은 한국어 번역, 요약은 RSS 내용 기반 한국어 3~4줄(원문 페이지 스크래핑 금지). 카테고리는 **항상 사용자의 현재 카테고리 목록(기본 4개 + 사용자가 추가한 것) 중에서만** 고르며(JSON Schema enum으로 강제), 새 카테고리는 제안하지 않는다. 가져오기 때마다 번역은 됐지만 `category_id`가 NULL인 기사(카테고리를 새로 추가한 경우 포함, 최대 30개)도 현재 목록 기준으로 다시 분류한다. `articles.suggested_category` 컬럼은 현재 쓰지 않는다(PRD의 '새 카테고리 제안'은 보류 — PRD 갱신 필요).
 
 ### 저장 흐름 (PRD 5.3, 5.6, 8-2)
 - 카드의 'Notion 저장' 버튼 하나로 Notion과 DB에 함께 저장한다. 별도의 '저장하기' 버튼은 없다.
@@ -75,9 +75,10 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 ### 데이터 모델 (PRD 7, Neon 반영 완료)
 정의는 `src/db/schema.ts`, 마이그레이션은 `drizzle/`. `npx drizzle-kit generate` / `migrate`로 관리한다.
 - `categories`: id, user_id, name, created_at — `(user_id, name)` 고유
-- `articles`: id, user_id, source, url, original_title, title_ko, summary_ko, category_id, published_at, saved_at, notion_page_url — `(user_id, url)` 고유. `title_ko`·`summary_ko`·`category_id`는 Claude 처리 전까지 NULL 허용(`0001` 마이그레이션). `category_id`는 `categories`를 `on delete restrict`로 참조.
+- `articles`: id, user_id, source, url, original_title, title_ko, summary_ko, category_id, suggested_category, published_at, saved_at, notion_page_url — `(user_id, url)` 고유. `title_ko`·`summary_ko`·`category_id`는 Claude 처리 전까지 NULL 허용(`0001` 마이그레이션). `category_id`는 `categories`를 `on delete restrict`로 참조.
 
 ### 카테고리 관리 (PRD 5.5, 8-3)
+- 구현됨: 추가(`POST /api/categories`, 이름 trim·30자 제한·중복 409)와 기본 카테고리 시드(`src/lib/default-categories.ts`, 카테고리가 0개인 사용자의 대시보드 진입 시 생성). 이름 수정·삭제는 미구현.
 - 목록 조회, 추가, 이름 수정, 삭제를 언제든 가능.
 - 이름 수정은 해당 기사에 그대로 반영된다(기사는 `category_id`로 참조).
 - 저장된 기사가 있는 카테고리는 삭제 불가. 기사가 없는 카테고리만 삭제 가능.

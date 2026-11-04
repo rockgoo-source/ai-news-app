@@ -9,6 +9,7 @@ import { NewsCard } from "@/components/news-card";
 import { PAGE_SIZE, Pagination } from "@/components/pagination";
 import { db } from "@/db";
 import { articles, categories } from "@/db/schema";
+import { ensureDefaultCategories } from "@/lib/default-categories";
 
 export const metadata: Metadata = {
   title: "대시보드 · AI 뉴스 수집기",
@@ -20,6 +21,8 @@ export default async function DashboardPage({
   // 페이지는 공개이므로 여기서 직접 로그인 여부를 확인한다.
   const { userId } = await auth();
   if (!userId) return <AuthGate />;
+
+  await ensureDefaultCategories(userId);
 
   const { category, page } = await searchParams;
   const first = (v: string | string[] | undefined) =>
@@ -57,7 +60,10 @@ export default async function DashboardPage({
         originalTitle: articles.originalTitle,
         titleKo: articles.titleKo,
         summaryKo: articles.summaryKo,
-        categoryName: categories.name,
+        // 기존 카테고리가 없으면 Claude가 제안한 새 카테고리 이름을 보여준다.
+        categoryName: sql<
+          string | null
+        >`coalesce(${categories.name}, ${articles.suggestedCategory})`,
         date: sql<Date>`coalesce(${articles.publishedAt}, ${articles.savedAt})`,
         notionPageUrl: articles.notionPageUrl,
       })

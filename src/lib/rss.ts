@@ -18,7 +18,11 @@ export type FeedArticle = {
   url: string;
   originalTitle: string;
   publishedAt: Date;
+  // Claude 요약용 RSS 본문 발췌(저장하지 않음)
+  snippet: string;
 };
+
+const SNIPPET_MAX = 1500;
 
 export type FetchResult = {
   articles: FeedArticle[];
@@ -43,7 +47,19 @@ async function fetchSource(
     const publishedAt = new Date(dateStr);
     if (Number.isNaN(publishedAt.getTime()) || publishedAt < since) continue;
 
-    result.push({ source: source.name, url, originalTitle: title, publishedAt });
+    const snippet = (item.contentSnippet ?? item.content ?? "")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, SNIPPET_MAX);
+
+    result.push({
+      source: source.name,
+      url,
+      originalTitle: title,
+      publishedAt,
+      snippet,
+    });
   }
   return result;
 }
