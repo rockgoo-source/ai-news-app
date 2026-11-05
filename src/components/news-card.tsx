@@ -1,3 +1,5 @@
+import { SaveNewsButton } from "@/components/save-news-button";
+
 export type NewsCardData = {
   id: number;
   source: string;
@@ -36,7 +38,7 @@ export function NewsCard({ article }: { article: NewsCardData }) {
           </span>
         )}
         <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
-          {article.source} · {formatDate(article.date)}
+          {article.source}
         </span>
       </div>
       <h3 className="mt-3 text-lg font-semibold leading-snug">
@@ -47,31 +49,26 @@ export function NewsCard({ article }: { article: NewsCardData }) {
           {article.summaryKo}
         </p>
       )}
-      <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-        <a
-          href={article.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded text-sm text-zinc-500 hover:text-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400"
+      <div className="mt-auto flex items-end justify-between gap-3 pt-5">
+        <time
+          dateTime={article.date.toISOString()}
+          className="shrink-0 pb-1.5 text-xs text-zinc-500 dark:text-zinc-400"
         >
-          원문보기 ↗
-        </a>
-        <div className="flex items-center gap-3 text-sm">
-          {article.notionPageUrl && (
-            <>
-              <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                ✓ 저장됨
-              </span>
-              <a
-                href={article.notionPageUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded text-zinc-500 hover:text-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400"
-              >
-                Notion ↗
-              </a>
-            </>
-          )}
+          {formatDate(article.date)}
+        </time>
+        <div className="flex items-start gap-3">
+          <a
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded py-1.5 text-sm text-zinc-500 hover:text-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400"
+          >
+            원문보기 ↗
+          </a>
+          <SaveNewsButton
+            articleId={article.id}
+            initialSaved={article.notionPageUrl !== null}
+          />
         </div>
       </div>
     </article>
