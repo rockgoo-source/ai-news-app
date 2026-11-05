@@ -133,7 +133,7 @@ export function CategoryChip({
           onBlur={() => {
             if (!busy) cancel();
           }}
-          className="w-40 rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900"
+          className="w-40 rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 dark:border-zinc-700"
         />
         {error && (
           <span role="alert" className="text-xs text-red-600 dark:text-red-400">
@@ -175,7 +175,7 @@ export function CategoryChip({
       {menuOpen && (
         <div
           role="menu"
-          className="absolute left-0 top-full z-20 mt-1 min-w-32 rounded-lg border border-zinc-200 bg-white py-1 text-sm shadow-md dark:border-zinc-800 dark:bg-zinc-900"
+          className="absolute left-0 top-full z-20 mt-1 min-w-32 rounded-lg border border-zinc-200 bg-white py-1 text-sm font-normal text-zinc-900 shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
         >
           <button
             type="button"

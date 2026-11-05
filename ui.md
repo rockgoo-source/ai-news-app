@@ -97,8 +97,8 @@
 - 맨 앞에 **전체** 칩(필터 해제). 선택된 칩만 강조색으로 채운다.
 - 칩이 많아지면 `flex-wrap`으로 줄바꿈한다(모바일은 `overflow-x-auto flex-nowrap`도 허용).
 - **추가 버튼**은 항상 칩 목록의 마지막. 점선 테두리로 일반 칩과 구분한다.
-- 추가 버튼을 누르면 칩 자리에서 인라인 입력(`rounded-full border px-3 py-1.5 text-sm`)으로 바뀌고, Enter로 확정, Esc로 취소한다.
-- 각 칩 안쪽, 이름 바로 뒤에 항상 보이는 작은 `…` 버튼을 둔다(예: `(연구&논문 …)`, 칩 글자색을 따르고 `opacity-70`, hover 노출 금지). 누르면 이름 수정 / 삭제 메뉴가 열린다. 저장된 기사가 있는 카테고리는 삭제 항목을 비활성화하고 이유를 `title`로 안내한다.
+- 추가 버튼을 누르면 칩 자리에서 인라인 입력(`rounded-full border bg-white px-3 py-1.5 text-sm text-zinc-900`, 다크 모드에서도 흰 배경 + 어두운 글자)으로 바뀌고, Enter로 확정, Esc로 취소한다.
+- 각 칩 안쪽, 이름 바로 뒤에 항상 보이는 작은 `…` 버튼을 둔다(예: `(연구&논문 …)`, 칩 글자색을 따르고 `opacity-70`, hover 노출 금지). 누르면 이름 수정 / 삭제 메뉴가 열린다. 메뉴는 칩 안에 있어 선택된 칩의 흰 글자를 물려받으므로 `text-zinc-900 dark:text-zinc-100`을 직접 지정한다. 저장된 기사가 있는 카테고리는 삭제 항목을 비활성화하고 이유를 `title`로 안내한다.
 - 칩 이름은 한 줄, 길면 `max-w-[12rem] truncate`.
 
 ### 4.4 뉴스 카드
@@ -107,26 +107,29 @@
 <article className="flex flex-col rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
   <div className="flex items-center justify-between gap-2">
     <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">모델</span>
-    <span className="text-xs text-zinc-500 dark:text-zinc-400">TechCrunch · 2026.11.03</span>
+    <span className="text-xs text-zinc-500 dark:text-zinc-400">TechCrunch</span>
   </div>
   <h3 className="mt-3 text-lg font-semibold leading-snug">한국어 제목</h3>
   <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">요약 3~4줄</p>
-  <div className="mt-auto flex items-center justify-between pt-5">
-    <a target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-500 hover:text-indigo-600">원문보기 ↗</a>
-    <button className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">Notion 저장</button>
+  <div className="mt-auto flex items-end justify-between gap-3 pt-5">
+    <time className="text-xs text-zinc-500 dark:text-zinc-400">2026.11.03</time>
+    <div className="flex items-start gap-3">
+      <a target="_blank" rel="noopener noreferrer" className="py-1.5 text-sm text-zinc-500 hover:text-indigo-600">원문보기 ↗</a>
+      <button className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">뉴스 저장</button>
+    </div>
   </div>
 </article>
 ```
 
-- 표시 항목: 한국어 제목, 요약, 카테고리, 출처, 날짜, 원문보기, Notion 저장.
-- 순서: 상단 메타(카테고리 배지 + 출처·날짜) → 제목 → 요약 → 하단 액션.
+- 표시 항목: 한국어 제목, 요약, 카테고리, 출처, 날짜, 원문보기, 뉴스 저장.
+- 순서: 상단 메타(카테고리 배지 + 출처) → 제목 → 요약 → 하단(왼쪽 기사 날짜, 오른쪽 원문보기 + 뉴스 저장).
 - 요약은 `line-clamp-4`로 3~4줄에 맞춘다.
 - 하단 액션은 `mt-auto`로 카드 높이가 달라도 같은 선에 맞춘다.
 - **원문보기**는 새 탭(`target="_blank"` + `rel="noopener noreferrer"`).
-- **Notion 저장** 버튼 상태
+- **뉴스 저장** 버튼(`save-news-button.tsx`, `POST /api/articles/[id]/save`) 상태
   - 기본: 위 스타일
   - 저장 중: 비활성 + "저장 중…"
-  - 저장됨(이미 저장한 기사 포함): 버튼 대신 `✓ 저장됨` 텍스트(`text-emerald-600`), 클릭 불가. 저장한 뉴스 탭에서는 Notion 페이지 링크를 함께 보여줄 수 있다.
+  - 저장됨(이미 저장한 기사 포함): 같은 자리의 비활성 `✓ 저장됨` 버튼(`border-emerald-200 bg-emerald-50 text-emerald-700`), 클릭 불가.
   - 실패: 카드 하단에 `text-xs text-red-600`로 짧은 오류 문구와 다시 시도.
 - 카드 전체를 링크로 만들지 않는다(버튼·링크가 따로 있으므로).
 
@@ -163,7 +166,7 @@
 
 ## 6. 구현 메모
 
-- **구현 현황**: `/dashboard`(`src/app/dashboard/page.tsx`)가 `articles`+`categories`를 최신순(발행일, 없으면 저장일 내림차순)으로 카드 목록에 표시한다. 카테고리 필터는 `?category=<id>` 링크이며, 카테고리 추가 버튼(`add-category-button.tsx`)은 인라인 입력으로 바뀌어 Enter로 `POST /api/categories`에 추가하고 Esc로 취소하며(중복·빈 이름은 입력 옆에 오류 표시), 사용자의 카테고리가 하나도 없으면 대시보드 진입 시 기본 카테고리 4개(연구&논문, 제품&출시, 산업&비즈니스, 정책&규제)가 만들어진다. 각 칩(`category-chip.tsx`) 안쪽 이름 뒤에는 항상 보이는 작은 `…` 버튼이 있고, 누르면 드롭다운 메뉴(이름 수정 / 삭제)가 열린다(바깥 클릭·Esc로 닫힘). 수정은 인라인 입력(Enter 확정, Esc 취소), 삭제는 확인 창 후 진행하며 Notion에 저장한 기사가 있는 카테고리는 삭제 항목이 비활성(`title`로 이유 안내)이다. 삭제하면 저장하지 않은 기사는 미분류로 돌아가 다음 가져오기 때 재분류된다. 헤더 오른쪽에 **뉴스 가져오기** 버튼(`fetch-news-button.tsx`)이 있어 최근 24시간 RSS 기사를 `articles`에 저장하고 목록을 새로고침하며, 결과(새 기사·중복·번역 수, 실패 소스·번역 실패 수)를 버튼 옆(sm 이상)에 짧게 보여준다. 목록은 `PAGE_SIZE`(12)개씩 `?page=<n>`으로 나누고, 카드 그리드 아래 `pagination.tsx`가 `[처음] [이전] 1 … 12 13 [14] 15 16 … 28 [다음] [끝]` 형태로 표시한다(항상 1·마지막 페이지, 현재 기준 앞뒤 2개, 끊기면 `…`, 첫/마지막 페이지에서 이전·처음/다음·끝 비활성). 카테고리를 바꾸면 1페이지로 돌아간다. 탭은 아직 없다. 분류 전 기사는 카테고리 배지를 중립색 `미분류`로, 제목은 원문 제목으로 대체하며 요약이 없으면 요약 영역을 생략한다. `✓ 저장됨`과 Notion 링크는 `notionPageUrl`이 있을 때만 표시한다.
+- **구현 현황**: `/dashboard`(`src/app/dashboard/page.tsx`)가 `articles`+`categories`를 최신순(발행일, 없으면 저장일 내림차순)으로 카드 목록에 표시한다. 카테고리 필터는 `?category=<id>` 링크이며, 카테고리 추가 버튼(`add-category-button.tsx`)은 인라인 입력으로 바뀌어 Enter로 `POST /api/categories`에 추가하고 Esc로 취소하며(중복·빈 이름은 입력 옆에 오류 표시), 사용자의 카테고리가 하나도 없으면 대시보드 진입 시 기본 카테고리 4개(연구&논문, 제품&출시, 산업&비즈니스, 정책&규제)가 만들어진다. 각 칩(`category-chip.tsx`) 안쪽 이름 뒤에는 항상 보이는 작은 `…` 버튼이 있고, 누르면 드롭다운 메뉴(이름 수정 / 삭제)가 열린다(바깥 클릭·Esc로 닫힘). 수정은 인라인 입력(Enter 확정, Esc 취소), 삭제는 확인 창 후 진행하며 Notion에 저장한 기사가 있는 카테고리는 삭제 항목이 비활성(`title`로 이유 안내)이다. 삭제하면 저장하지 않은 기사는 미분류로 돌아가 다음 가져오기 때 재분류된다. 헤더 오른쪽에 **뉴스 가져오기** 버튼(`fetch-news-button.tsx`)이 있어 최근 24시간 RSS 기사를 `articles`에 저장하고 목록을 새로고침하며, 결과(새 기사·중복·번역 수, 실패 소스·번역 실패 수)를 버튼 옆(sm 이상)에 짧게 보여준다. 목록은 `PAGE_SIZE`(12)개씩 `?page=<n>`으로 나누고, 카드 그리드 아래 `pagination.tsx`가 `[처음] [이전] 1 … 12 13 [14] 15 16 … 28 [다음] [끝]` 형태로 표시한다(항상 1·마지막 페이지, 현재 기준 앞뒤 2개, 끊기면 `…`, 첫/마지막 페이지에서 이전·처음/다음·끝 비활성). 카테고리를 바꾸면 1페이지로 돌아간다. 탭은 아직 없다. 분류 전 기사는 카테고리 배지를 중립색 `미분류`로, 제목은 원문 제목으로 대체하며 요약이 없으면 요약 영역을 생략한다. `✓ 저장됨` 버튼은 `notionPageUrl`이 있을 때만 표시한다.
 - 컴포넌트 위치: `src/components/` (예: `header.tsx`, `category-bar.tsx`, `news-card.tsx`, `news-grid.tsx`).
 - 반복되는 클래스 조합은 컴포넌트로 묶고, `@apply`는 쓰지 않는다.
 - 클래스 합치기가 필요하면 템플릿 문자열 대신 작은 `cn` 헬퍼를 둔다.

@@ -88,7 +88,7 @@ export function AddCategoryButton() {
         onBlur={() => {
           if (!saving && !name.trim()) cancel();
         }}
-        className="w-40 rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900"
+        className="w-40 rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 dark:border-zinc-700"
       />
       {error && (
         <span role="alert" className="text-xs text-red-600 dark:text-red-400">

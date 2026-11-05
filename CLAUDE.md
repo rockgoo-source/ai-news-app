@@ -68,8 +68,8 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 - Claude 처리: 제목은 한국어 번역, 요약은 RSS 내용 기반 한국어 3~4줄(원문 페이지 스크래핑 금지). 카테고리는 **항상 사용자의 현재 카테고리 목록(기본 4개 + 사용자가 추가한 것) 중에서만** 고르며(JSON Schema enum으로 강제), 새 카테고리는 제안하지 않는다. 가져오기 때마다 번역은 됐지만 `category_id`가 NULL인 기사(카테고리를 새로 추가한 경우 포함, 최대 30개)도 현재 목록 기준으로 다시 분류한다. `articles.suggested_category` 컬럼은 현재 쓰지 않는다(PRD의 '새 카테고리 제안'은 보류 — PRD 갱신 필요).
 
 ### 저장 흐름 (PRD 5.3, 5.6, 8-2)
-- 카드의 'Notion 저장' 버튼 하나로 Notion과 DB에 함께 저장한다. 별도의 '저장하기' 버튼은 없다.
-- Notion MCP 서버로 지정한 기존 Notion 데이터베이스에 뉴스마다 행을 추가한다(제목, 카테고리, 요약, 원문 링크).
+- 카드의 '뉴스 저장' 버튼(`POST /api/articles/[id]/save`) 하나로 Notion과 DB에 함께 저장한다. 별도의 '저장하기' 버튼은 없다.
+- 앱 서버는 `src/lib/notion.ts`에서 Notion REST API(`NOTION_API_KEY`, `NOTION_DATABASE_ID`)로 지정한 기존 Notion 데이터베이스에 뉴스마다 행을 추가한다(속성: 제목·요약·출처(url)·카테고리(select)·날짜). 통합(integration)을 해당 DB에 연결해야 한다.
 - Notion 저장이 성공하면 **같은 요청에서** Neon `articles`에도 저장한다(새 카테고리면 `categories` 추가, `notion_page_url` 기록).
 
 ### 데이터 모델 (PRD 7, Neon 반영 완료)
