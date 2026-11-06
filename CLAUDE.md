@@ -25,6 +25,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run lint` — ESLint (flat config: `eslint.config.mjs`)
 - 테스트 러너는 아직 설정되지 않았다.
 
+### 슬래시 명령 (`.claude/commands/`)
+- `/new-branch <이름>` — main에서 새 브랜치만 만든다.
+- `/news-workflow <브랜치이름>` (`news-workflow.md`) — 새 기능 개발 전체 흐름: main 확인(아니면 경고 후 이동 여부 질문) → 브랜치 생성(이름이 없으면 기능을 물어보고 영어 소문자-하이픈 이름 제안) → "이제 개발을 시작하세요!" 안내와 기술 스택·컨벤션 재안내 → 사용자가 `완료`/`done`을 입력하면 변경 파일 목록과 커밋 메시지 제안, 확인 후 커밋하고 main에 병합 → 작업 요약. 새 기능은 이 명령으로 시작한다.
+
 ## Next.js 주의사항
 
 Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규칙이 다를 수 있으므로(`AGENTS.md`), 코드를 쓰기 전에 `node_modules/next/dist/docs/`의 관련 가이드를 먼저 읽는다. Clerk 연동도 이 버전 기준으로 한다. 특히 Next.js 16에서 `middleware.ts`는 deprecated이고 `proxy.ts`로 이름이 바뀌었다(런타임은 nodejs 고정, `node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md` 참고). Clerk의 `clerkMiddleware`는 `proxy.ts`에서 쓰고, Clerk 쪽 최신 안내와 맞는지 구현 시 확인한다.

@@ -14,17 +14,20 @@ const chipIdle =
 export function CategoryBar({
   categories,
   selectedId,
+  query = "",
 }: {
   categories: CategoryItem[];
   selectedId: number | null;
+  query?: string;
 }) {
+  // 검색어는 카테고리를 바꿔도 유지한다.
   return (
     <nav
       aria-label="카테고리"
-      className="mt-6 flex flex-wrap items-center gap-2"
+      className="mt-4 flex flex-wrap items-center gap-2"
     >
       <Link
-        href="/dashboard"
+        href={query ? `/dashboard?q=${encodeURIComponent(query)}` : "/dashboard"}
         aria-current={selectedId === null ? "page" : undefined}
         className={`${chipBase} ${selectedId === null ? chipActive : chipIdle}`}
       >
@@ -36,6 +39,7 @@ export function CategoryBar({
           id={c.id}
           name={c.name}
           selected={selectedId === c.id}
+          query={query}
           savedCount={c.savedCount}
         />
       ))}

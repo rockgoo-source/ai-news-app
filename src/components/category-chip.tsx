@@ -21,11 +21,13 @@ export function CategoryChip({
   name,
   selected,
   savedCount,
+  query = "",
 }: {
   id: number;
   name: string;
   selected: boolean;
   savedCount: number;
+  query?: string;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -101,7 +103,8 @@ export function CategoryChip({
         return;
       }
       // 보고 있던 카테고리를 지우면 전체로 돌아간다.
-      if (selected) router.push("/dashboard");
+      if (selected)
+        router.push(query ? `/dashboard?q=${encodeURIComponent(query)}` : "/dashboard");
       else router.refresh();
     } catch {
       setError("네트워크 오류가 발생했어요.");
@@ -155,7 +158,7 @@ export function CategoryChip({
       }}
     >
       <Link
-        href={`/dashboard?category=${id}`}
+        href={`/dashboard?category=${id}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
         aria-current={selected ? "page" : undefined}
         className={linkBase}
       >
