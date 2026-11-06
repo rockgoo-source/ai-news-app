@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
-import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { AuthGate } from "@/components/auth-gate";
 import { CategoryBar } from "@/components/category-bar";
 import { FetchNewsButton } from "@/components/fetch-news-button";
 import { NewsCard } from "@/components/news-card";
 import { PAGE_SIZE, Pagination } from "@/components/pagination";
+import { SearchForm } from "@/components/search-form";
 import { db } from "@/db";
 import { articles, categories } from "@/db/schema";
 import { ensureDefaultCategories } from "@/lib/default-categories";
@@ -24,7 +25,7 @@ export default async function DashboardPage({
 
   await ensureDefaultCategories(userId);
 
-  const { category, page } = await searchParams;
+  const { category, page, q } = await searchParams;
   const first = (v: string | string[] | undefined) =>
     Array.isArray(v) ? v[0] : v;
   const parsed = Number(first(category));
@@ -33,9 +34,20 @@ export default async function DashboardPage({
   const requestedPage =
     Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 
+  const keyword = (first(q) ?? "").trim().slice(0, 100);
+  // LIKE 와일드카드(%, _, \)는 글자 그대로 검색한다.
+  const pattern = `%${keyword.replace(/[\\%_]/g, "\\$&")}%`;
+
   const where = and(
     eq(articles.userId, userId),
     selectedId ? eq(articles.categoryId, selectedId) : undefined,
+    keyword
+      ? or(
+          ilike(articles.titleKo, pattern),
+          ilike(articles.originalTitle, pattern),
+          ilike(articles.summaryKo, pattern),
+        )
+      : undefined,
   );
 
   const [{ total: totalCount }] = await db
@@ -105,11 +117,18 @@ export default async function DashboardPage({
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <h1 className="text-2xl font-bold">대시보드</h1>
-        <CategoryBar categories={categoryRows} selectedId={selectedId} />
+        <SearchForm query={keyword} categoryId={selectedId} />
+        <CategoryBar
+          categories={categoryRows}
+          selectedId={selectedId}
+          query={keyword}
+        />
 
         {items.length === 0 ? (
           <div className="mt-6 rounded-xl border border-dashed border-zinc-300 py-16 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-            {selectedId
+            {keyword
+              ? `‘${keyword}’에 해당하는 뉴스가 없어요.`
+              : selectedId
               ? "이 카테고리에는 뉴스가 없어요."
               : "아직 가져온 뉴스가 없어요. 오른쪽 위 ‘뉴스 가져오기’를 눌러보세요."}
           </div>
@@ -127,6 +146,7 @@ export default async function DashboardPage({
           hrefFor={(p) => {
             const params = new URLSearchParams();
             if (selectedId) params.set("category", String(selectedId));
+            if (keyword) params.set("q", keyword);
             if (p > 1) params.set("page", String(p));
             const qs = params.toString();
             return qs ? `/dashboard?${qs}` : "/dashboard";
