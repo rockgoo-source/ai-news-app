@@ -6,6 +6,7 @@ import { AuthGate } from "@/components/auth-gate";
 import { CategoryBar } from "@/components/category-bar";
 import { FetchNewsButton } from "@/components/fetch-news-button";
 import { NewsCard } from "@/components/news-card";
+import { NewsCountBadge } from "@/components/news-count-badge";
 import { PAGE_SIZE, Pagination } from "@/components/pagination";
 import { SearchForm } from "@/components/search-form";
 import { db } from "@/db";
@@ -16,9 +17,7 @@ export const metadata: Metadata = {
   title: "대시보드 · AI 뉴스 수집기",
 };
 
-export default async function DashboardPage({
-  searchParams,
-}: PageProps<"/dashboard">) {
+export default async function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
   // 페이지는 공개이므로 여기서 직접 로그인 여부를 확인한다.
   const { userId } = await auth();
   if (!userId) return <AuthGate />;
@@ -26,13 +25,11 @@ export default async function DashboardPage({
   await ensureDefaultCategories(userId);
 
   const { category, page, q } = await searchParams;
-  const first = (v: string | string[] | undefined) =>
-    Array.isArray(v) ? v[0] : v;
+  const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
   const parsed = Number(first(category));
   const selectedId = Number.isInteger(parsed) && parsed > 0 ? parsed : null;
   const parsedPage = Number(first(page));
-  const requestedPage =
-    Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  const requestedPage = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 
   const keyword = (first(q) ?? "").trim().slice(0, 100);
   // LIKE 와일드카드(%, _, \)는 글자 그대로 검색한다.
@@ -50,23 +47,23 @@ export default async function DashboardPage({
       : undefined,
   );
 
-  const [{ total: totalCount }] = await db
-    .select({ total: count() })
-    .from(articles)
-    .where(where);
+  const [{ total: totalCount }] = await db.select({ total: count() }).from(articles).where(where);
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   // 범위를 벗어난 페이지는 마지막 페이지로 맞춘다.
   const currentPage = Math.min(requestedPage, totalPages);
 
-  const [categoryRows, rows] = await Promise.all([
+  const [[{ allCount }], categoryRows, rows] = await Promise.all([
+    // 필터·검색과 무관한 사용자의 전체 뉴스 수
+    db.select({ allCount: count() }).from(articles).where(eq(articles.userId, userId)),
     db
       .select({
         id: categories.id,
         name: categories.name,
         // Notion에 저장한 기사 수. 0보다 크면 삭제할 수 없다.
-        savedCount: sql<number>`count(${articles.id}) filter (where ${articles.notionPageUrl} is not null)`.mapWith(
-          Number,
-        ),
+        savedCount:
+          sql<number>`count(${articles.id}) filter (where ${articles.notionPageUrl} is not null)`.mapWith(
+            Number,
+          ),
       })
       .from(categories)
       .leftJoin(articles, eq(articles.categoryId, categories.id))
@@ -92,10 +89,7 @@ export default async function DashboardPage({
       .leftJoin(categories, eq(articles.categoryId, categories.id))
       .where(where)
       // 최신순: 발행일(없으면 저장일) 내림차순
-      .orderBy(
-        desc(sql`coalesce(${articles.publishedAt}, ${articles.savedAt})`),
-        desc(articles.id),
-      )
+      .orderBy(desc(sql`coalesce(${articles.publishedAt}, ${articles.savedAt})`), desc(articles.id))
       .limit(PAGE_SIZE)
       .offset((currentPage - 1) * PAGE_SIZE),
   ]);
@@ -106,9 +100,7 @@ export default async function DashboardPage({
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <span className="whitespace-nowrap text-lg font-bold tracking-tight">
-            AI 뉴스 수집기
-          </span>
+          <span className="whitespace-nowrap text-lg font-bold tracking-tight">AI 뉴스 수집기</span>
           <div className="flex items-center gap-4">
             <FetchNewsButton />
             <UserButton />
@@ -116,21 +108,20 @@ export default async function DashboardPage({
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <h1 className="text-2xl font-bold">대시보드</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">대시보드</h1>
+          <NewsCountBadge count={allCount} />
+        </div>
         <SearchForm query={keyword} categoryId={selectedId} />
-        <CategoryBar
-          categories={categoryRows}
-          selectedId={selectedId}
-          query={keyword}
-        />
+        <CategoryBar categories={categoryRows} selectedId={selectedId} query={keyword} />
 
         {items.length === 0 ? (
           <div className="mt-6 rounded-xl border border-dashed border-zinc-300 py-16 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
             {keyword
               ? `‘${keyword}’에 해당하는 뉴스가 없어요.`
               : selectedId
-              ? "이 카테고리에는 뉴스가 없어요."
-              : "아직 가져온 뉴스가 없어요. 오른쪽 위 ‘뉴스 가져오기’를 눌러보세요."}
+                ? "이 카테고리에는 뉴스가 없어요."
+                : "아직 가져온 뉴스가 없어요. 오른쪽 위 ‘뉴스 가져오기’를 눌러보세요."}
           </div>
         ) : (
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

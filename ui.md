@@ -73,6 +73,12 @@
 - 컨테이너: `flex gap-6 border-b border-zinc-200 dark:border-zinc-800`.
 - 접근성: `role="tablist"` / `role="tab"` / `aria-selected`.
 
+### 4.2.1 뉴스 개수 배지 (페이지 제목 오른쪽)
+
+- `news-count-badge.tsx`: `총 N개의 뉴스`. 제목 `h1` 옆에 `flex items-center gap-3`으로 나란히 둔다.
+- 스타일: `rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300`(카드의 카테고리 배지와 동일).
+- 개수는 필터·검색과 상관없이 사용자가 수집한 전체 기사 수(`articles`의 본인 `user_id` 기준). 천 단위 쉼표.
+
 ### 4.3 카테고리 바 (카드 목록 바로 위)
 
 카테고리 칩을 가로로 나열하고, **맨 끝에 카테고리 추가 버튼**을 둔다.
