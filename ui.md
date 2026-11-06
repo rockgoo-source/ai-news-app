@@ -138,6 +138,7 @@
   - 저장 중: 비활성 + "저장 중…"
   - 저장됨(이미 저장한 기사 포함): 같은 자리의 비활성 `✓ 저장됨` 버튼(`border-emerald-200 bg-emerald-50 text-emerald-700`), 클릭 불가.
   - 실패: 카드 하단에 `text-xs text-red-600`로 짧은 오류 문구와 다시 시도.
+- **삭제 버튼**(`delete-news-button.tsx`, `DELETE /api/articles/[id]`): 카드(`relative`) 오른쪽 상단 `absolute right-2 top-2`에 `✕` 아이콘 버튼(`aria-label="뉴스 삭제"`, `text-zinc-400 hover:text-red-600`). 확인 창 후 DB에서 삭제하고 목록을 새로고침한다. 상단 메타 줄은 `pr-8`로 버튼과 겹치지 않게 한다. 실패하면 버튼 아래에 짧은 오류 문구.
 - 카드 전체를 링크로 만들지 않는다(버튼·링크가 따로 있으므로).
 
 ### 4.5 카드 그리드

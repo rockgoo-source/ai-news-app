@@ -1,3 +1,4 @@
+import { DeleteNewsButton } from "@/components/delete-news-button";
 import { SaveNewsButton } from "@/components/save-news-button";
 
 export type NewsCardData = {
@@ -26,8 +27,9 @@ function formatDate(date: Date) {
 
 export function NewsCard({ article }: { article: NewsCardData }) {
   return (
-    <article className="flex flex-col rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex items-center justify-between gap-2">
+    <article className="relative flex flex-col rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
+      <DeleteNewsButton articleId={article.id} />
+      <div className="flex items-center gap-2 pr-8">
         {article.categoryName ? (
           <span className="max-w-[12rem] truncate rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
             {article.categoryName}
@@ -37,7 +39,7 @@ export function NewsCard({ article }: { article: NewsCardData }) {
             미분류
           </span>
         )}
-        <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="ml-auto shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
           {article.source}
         </span>
       </div>
