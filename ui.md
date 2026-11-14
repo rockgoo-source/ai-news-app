@@ -160,7 +160,7 @@
 - **빈 상태**: 카드 영역 가운데에 안내 문구와 행동 유도.
   예) "아직 가져온 뉴스가 없어요. 오른쪽 위 ‘뉴스 가져오기’를 눌러보세요."
   `rounded-xl border border-dashed border-zinc-300 py-16 text-center text-sm text-zinc-500`
-- **로딩**: 카드 모양 스켈레톤 6개(`animate-pulse`, `bg-zinc-200 dark:bg-zinc-800` 막대).
+- **로딩**: 카드 모양 스켈레톤 6개(`animate-pulse`, `bg-zinc-200 dark:bg-zinc-800` 막대). `src/app/dashboard/loading.tsx`가 헤더(앱 이름만)·제목과 함께 `news-card-skeleton.tsx`를 6개 그리며, 대시보드 이동·필터·검색·페이지 전환 중 표시된다(`role="status"` `aria-busy`).
 - **오류**: 목록 위에 `rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700` 배너. 다크는 `dark:border-red-900 dark:bg-red-950 dark:text-red-300`.
 - **필터 결과 없음**: "이 카테고리에는 뉴스가 없어요."
 
