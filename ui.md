@@ -6,8 +6,8 @@
 ## 1. 디자인 원칙
 
 - **여백 넉넉하게**: 카드·섹션 사이 간격을 충분히 둔다. 빽빽한 화면을 피한다.
-- **한 화면에 강조는 하나**: 주 버튼(뉴스 가져오기)만 색을 채우고 나머지는 중립색.
-- **읽기 우선**: 한국어 본문은 `leading-relaxed`, 줄 길이는 카드 폭으로 제한한다.
+- **한 화면에 강조는 하나**: 주 버튼(뉴스 가져오기)만 색을 채우고 나머지는 중립색. 단, hover·포커스 피드백(테두리·글자색이 인디고로 바뀜)은 채움이 아니므로 예외로 허용한다.
+- **읽기 우선**: 한국어 본문은 `leading-relaxed` 이상(뉴스 카드 요약은 `leading-7`), 줄 길이는 카드 폭으로 제한한다.
 - **장식 최소화**: 그림자는 약하게, 테두리는 1px 연한 회색, 둥근 모서리는 일관되게.
 - **라이트/다크 모두 지원**: 색은 토큰(`bg-background`, `text-foreground`)과 `dark:` 변형을 함께 쓴다.
 
@@ -23,12 +23,15 @@
 | 본문 글자 | `text-zinc-900` | `dark:text-zinc-100` |
 | 보조 글자(출처·날짜) | `text-zinc-500` | `dark:text-zinc-400` |
 | 강조색(주 버튼, 선택된 칩) | `bg-indigo-600 text-white` | `dark:bg-indigo-500` |
+| 본문 보조 글자(요약·원문보기) | `text-zinc-600` | `dark:text-zinc-300` |
+| 출처 글자(보조 글자보다 한 단계 진하게) | `text-zinc-700` | `dark:text-zinc-200` |
+| 카드 내부 구분선 | `border-zinc-100` | `dark:border-zinc-800` |
 | 강조 hover | `hover:bg-indigo-700` | `dark:hover:bg-indigo-400` |
 
 - 폰트: `font-sans`(Geist). `globals.css`의 `body`는 `var(--font-sans)`를 쓴다. 한국어는 시스템 폴백을 따른다.
 - 크기: 페이지 제목 `text-2xl font-bold`, 카드 제목 `text-lg font-semibold`, 본문 `text-sm`, 메타 `text-xs`.
 - 모서리: 카드 `rounded-xl`, 버튼·칩 `rounded-full` 또는 `rounded-lg`.
-- 간격은 4의 배수 단위(`gap-2/4/6`, `p-4/5/6`)만 쓴다.
+- 간격은 4의 배수 단위(`gap-2/4/6`, `p-4/5/6`)를 기본으로 쓴다. 칩·배지·카드 내부의 미세 간격(`0.5`·`1.5`·`2.5` 단위, 예: `gap-0.5`, `py-1.5`, `px-2.5`)과 `-translate-y-0.5` 같은 hover 이동만 예외로 허용한다.
 
 ## 3. 페이지 레이아웃
 
@@ -117,18 +120,23 @@
 ### 4.4 뉴스 카드
 
 ```tsx
-<article className="group relative flex flex-col rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-  <span className="w-fit rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">모델</span>
-  <h3 className="mt-4 text-lg font-semibold leading-snug tracking-tight break-keep group-hover:text-indigo-700">한국어 제목</h3>
+<article className="group relative flex flex-col rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md focus-within:border-indigo-300 motion-reduce:transition-none motion-reduce:hover:translate-y-0 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-500/50 dark:focus-within:border-indigo-500/50">
+  <div className="flex items-center pr-8">
+    <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">모델</span>
+  </div>
+  <h3 className="mt-4 text-pretty break-keep text-lg font-semibold leading-snug tracking-tight text-zinc-900 transition-colors group-hover:text-indigo-700 motion-reduce:transition-none dark:text-zinc-100 dark:group-hover:text-indigo-300">한국어 제목</h3>
   <p className="mt-3 line-clamp-4 break-keep text-sm leading-7 text-zinc-600 dark:text-zinc-300">요약 3~4줄</p>
   <div className="mt-auto pt-6">
     <div className="flex items-end justify-between gap-3 border-t border-zinc-100 pt-4 dark:border-zinc-800">
-      <div className="flex flex-col gap-0.5">
-        <span className="text-xs font-medium text-zinc-700 dark:text-zinc-200">TechCrunch</span>
+      <div className="flex min-w-0 flex-col gap-0.5 pb-1">
+        <span className="truncate text-xs font-medium text-zinc-700 dark:text-zinc-200">TechCrunch</span>
         <time className="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">2026.11.03</time>
       </div>
-      <div className="flex items-start gap-3">
-        <a target="_blank" rel="noopener noreferrer" className="py-1.5 text-sm text-zinc-600 hover:text-indigo-700">원문보기 ↗</a>
+      <div className="flex shrink-0 items-start gap-3">
+        <a target="_blank" rel="noopener noreferrer" className="rounded py-1.5 text-sm text-zinc-600 transition-colors hover:text-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 motion-reduce:transition-none dark:text-zinc-300 dark:hover:text-indigo-300">
+          원문보기
+          <span aria-hidden className="ml-0.5 inline-block transition-transform group-hover:-translate-y-px group-hover:translate-x-0.5 motion-reduce:transition-none">↗</span>
+        </a>
         <button className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">뉴스 저장</button>
       </div>
     </div>
@@ -138,11 +146,11 @@
 
 - 표시 항목: 한국어 제목, 요약, 카테고리, 출처, 날짜, 원문보기, 뉴스 저장.
 - 위계: 제목이 가장 크고 진하다(`text-lg font-semibold tracking-tight`). 상단에는 카테고리 배지만 두고, 출처·날짜는 하단 구분선(`border-t`) 아래 왼쪽에 세로로 쌓는다(출처 `font-medium`으로 한 단계 진하게, 날짜는 `tabular-nums` 보조색).
-- 타이포: 한국어는 `break-keep`으로 단어 중간에서 끊지 않는다. 요약은 `text-sm leading-7`, `zinc-600`(다크 `zinc-300`)으로 흰 배경 대비 AA 이상.
+- 타이포: 한국어는 `break-keep`으로 단어 중간에서 끊지 않는다. 제목은 `text-pretty`로 줄바꿈 균형을 맞춘다. 요약은 `text-sm leading-7`, `zinc-600`(다크 `zinc-300`)으로 흰 배경 대비 AA 이상.
 - 여백: 카드 `p-6`, 배지→제목 `mt-4`, 제목→요약 `mt-3`, 요약→하단 `pt-6`.
 - 요약은 `line-clamp-4`로 3~4줄에 맞춘다.
 - 하단 영역은 `mt-auto`로 카드 높이가 달라도 같은 선에 맞춘다.
-- **hover/포커스**(카드 `group`): 카드가 1px 떠오르고(`-translate-y-0.5`), 테두리가 연한 인디고로 바뀌며 그림자가 커진다. 제목이 인디고로 바뀌고 `↗`가 우상단으로 살짝 움직인다. `motion-reduce`에서는 이동을 끈다. 카드 안 버튼·링크에 포커스가 가도 테두리가 강조된다(`focus-within`).
+- **hover/포커스**(카드 `group`): 카드가 2px 떠오르고(`-translate-y-0.5`), 테두리가 연한 인디고로 바뀌며 그림자가 커진다. 제목이 인디고로 바뀌고 `↗`(`aria-hidden` span)가 우상단으로 살짝 움직인다. `motion-reduce`에서는 이동과 전환을 끈다. 다크 모드의 테두리는 `indigo-500/50`으로 낮춘다. 카드 안 버튼·링크에 포커스가 가도 테두리가 강조된다(`focus-within`).
 - **원문보기**는 새 탭(`target="_blank"` + `rel="noopener noreferrer"`).
 - **뉴스 저장** 버튼(`save-news-button.tsx`, `POST /api/articles/[id]/save`) 상태
   - 기본: 위 스타일

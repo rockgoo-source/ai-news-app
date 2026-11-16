@@ -40,7 +40,7 @@ export function NewsCard({ article }: { article: NewsCardData }) {
           </span>
         )}
       </div>
-      <h3 className="mt-4 text-pretty break-keep text-lg font-semibold leading-snug tracking-tight text-zinc-900 transition-colors group-hover:text-indigo-700 motion-reduce:transition-none dark:text-zinc-50 dark:group-hover:text-indigo-300">
+      <h3 className="mt-4 text-pretty break-keep text-lg font-semibold leading-snug tracking-tight text-zinc-900 transition-colors group-hover:text-indigo-700 motion-reduce:transition-none dark:text-zinc-100 dark:group-hover:text-indigo-300">
         {article.titleKo ?? article.originalTitle}
       </h3>
       {article.summaryKo && (
