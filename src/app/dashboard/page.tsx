@@ -5,6 +5,7 @@ import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { AuthGate } from "@/components/auth-gate";
 import { CategoryBar } from "@/components/category-bar";
 import { FetchNewsButton } from "@/components/fetch-news-button";
+import { Footer } from "@/components/footer";
 import { NewsCard } from "@/components/news-card";
 import { NewsCountBadge } from "@/components/news-count-badge";
 import { PAGE_SIZE, Pagination } from "@/components/pagination";
@@ -97,7 +98,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const items = rows.map((r) => ({ ...r, date: new Date(r.date) }));
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+    <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <span className="whitespace-nowrap text-lg font-bold tracking-tight">AI 뉴스 수집기</span>
@@ -107,7 +108,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold">대시보드</h1>
           <NewsCountBadge count={allCount} />
@@ -144,6 +145,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
           }}
         />
       </main>
+      <Footer />
     </div>
   );
 }

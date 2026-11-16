@@ -182,6 +182,12 @@
 - `AuthGate`가 로그인 모달을 자동으로 연다. 모달 뒤 배경은 대시보드를 그리지 않고 빈 배경(`bg-zinc-50`)만 둔다.
 - 화면 분기는 `<Show when="signed-in|signed-out">`로 한다.
 
+### 4.7.1 푸터
+
+- `footer.tsx`: 대시보드(`page.tsx`, `loading.tsx`) 맨 아래. 문구는 `Copyright 2026 AI 뉴스 수집기. Powered by Claude.`
+- 스타일: `border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900`, 안쪽 `mx-auto max-w-6xl px-4 py-6 text-center text-xs text-zinc-500 sm:px-6 dark:text-zinc-400`.
+- 페이지 래퍼는 `flex min-h-screen flex-col`, `main`은 `flex-1`이라 내용이 짧아도 푸터가 화면 아래에 붙는다.
+
 ## 5. 상호작용·접근성
 
 - 모든 버튼·칩에 `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600`.
