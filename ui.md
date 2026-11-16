@@ -117,34 +117,39 @@
 ### 4.4 뉴스 카드
 
 ```tsx
-<article className="flex flex-col rounded-xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-  <div className="flex items-center justify-between gap-2">
-    <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">모델</span>
-    <span className="text-xs text-zinc-500 dark:text-zinc-400">TechCrunch</span>
-  </div>
-  <h3 className="mt-3 text-lg font-semibold leading-snug">한국어 제목</h3>
-  <p className="mt-2 line-clamp-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">요약 3~4줄</p>
-  <div className="mt-auto flex items-end justify-between gap-3 pt-5">
-    <time className="text-xs text-zinc-500 dark:text-zinc-400">2026.11.03</time>
-    <div className="flex items-start gap-3">
-      <a target="_blank" rel="noopener noreferrer" className="py-1.5 text-sm text-zinc-500 hover:text-indigo-600">원문보기 ↗</a>
-      <button className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">뉴스 저장</button>
+<article className="group relative flex flex-col rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
+  <span className="w-fit rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">모델</span>
+  <h3 className="mt-4 text-lg font-semibold leading-snug tracking-tight break-keep group-hover:text-indigo-700">한국어 제목</h3>
+  <p className="mt-3 line-clamp-4 break-keep text-sm leading-7 text-zinc-600 dark:text-zinc-300">요약 3~4줄</p>
+  <div className="mt-auto pt-6">
+    <div className="flex items-end justify-between gap-3 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+      <div className="flex flex-col gap-0.5">
+        <span className="text-xs font-medium text-zinc-700 dark:text-zinc-200">TechCrunch</span>
+        <time className="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">2026.11.03</time>
+      </div>
+      <div className="flex items-start gap-3">
+        <a target="_blank" rel="noopener noreferrer" className="py-1.5 text-sm text-zinc-600 hover:text-indigo-700">원문보기 ↗</a>
+        <button className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">뉴스 저장</button>
+      </div>
     </div>
   </div>
 </article>
 ```
 
 - 표시 항목: 한국어 제목, 요약, 카테고리, 출처, 날짜, 원문보기, 뉴스 저장.
-- 순서: 상단 메타(카테고리 배지 + 출처) → 제목 → 요약 → 하단(왼쪽 기사 날짜, 오른쪽 원문보기 + 뉴스 저장).
+- 위계: 제목이 가장 크고 진하다(`text-lg font-semibold tracking-tight`). 상단에는 카테고리 배지만 두고, 출처·날짜는 하단 구분선(`border-t`) 아래 왼쪽에 세로로 쌓는다(출처 `font-medium`으로 한 단계 진하게, 날짜는 `tabular-nums` 보조색).
+- 타이포: 한국어는 `break-keep`으로 단어 중간에서 끊지 않는다. 요약은 `text-sm leading-7`, `zinc-600`(다크 `zinc-300`)으로 흰 배경 대비 AA 이상.
+- 여백: 카드 `p-6`, 배지→제목 `mt-4`, 제목→요약 `mt-3`, 요약→하단 `pt-6`.
 - 요약은 `line-clamp-4`로 3~4줄에 맞춘다.
-- 하단 액션은 `mt-auto`로 카드 높이가 달라도 같은 선에 맞춘다.
+- 하단 영역은 `mt-auto`로 카드 높이가 달라도 같은 선에 맞춘다.
+- **hover/포커스**(카드 `group`): 카드가 1px 떠오르고(`-translate-y-0.5`), 테두리가 연한 인디고로 바뀌며 그림자가 커진다. 제목이 인디고로 바뀌고 `↗`가 우상단으로 살짝 움직인다. `motion-reduce`에서는 이동을 끈다. 카드 안 버튼·링크에 포커스가 가도 테두리가 강조된다(`focus-within`).
 - **원문보기**는 새 탭(`target="_blank"` + `rel="noopener noreferrer"`).
 - **뉴스 저장** 버튼(`save-news-button.tsx`, `POST /api/articles/[id]/save`) 상태
   - 기본: 위 스타일
   - 저장 중: 비활성 + "저장 중…"
   - 저장됨(이미 저장한 기사 포함): 같은 자리의 비활성 `✓ 저장됨` 버튼(`border-emerald-200 bg-emerald-50 text-emerald-700`), 클릭 불가.
   - 실패: 카드 하단에 `text-xs text-red-600`로 짧은 오류 문구와 다시 시도.
-- **삭제 버튼**(`delete-news-button.tsx`, `DELETE /api/articles/[id]`): 카드(`relative`) 오른쪽 상단 `absolute right-2 top-2`에 `✕` 아이콘 버튼(`aria-label="뉴스 삭제"`, `text-zinc-400 hover:text-red-600`). 확인 창 후 DB에서 삭제하고 목록을 새로고침한다. 상단 메타 줄은 `pr-8`로 버튼과 겹치지 않게 한다. 실패하면 버튼 아래에 짧은 오류 문구.
+- **삭제 버튼**(`delete-news-button.tsx`, `DELETE /api/articles/[id]`): 카드(`relative`) 오른쪽 상단 `absolute right-2 top-2`에 `✕` 아이콘 버튼(`aria-label="뉴스 삭제"`, `text-zinc-400 hover:text-red-600`). 확인 창 후 DB에서 삭제하고 목록을 새로고침한다. 상단 배지 줄은 `pr-8`로 버튼과 겹치지 않게 한다. 실패하면 버튼 아래에 짧은 오류 문구.
 - 카드 전체를 링크로 만들지 않는다(버튼·링크가 따로 있으므로).
 
 ### 4.5 카드 그리드
