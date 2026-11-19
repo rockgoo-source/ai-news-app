@@ -13,7 +13,7 @@ async function HomeGate() {
 // 메인 화면은 /dashboard. 로그인했으면 바로 이동하고, 아니면 로그인 모달을 연다.
 export default function Home() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-zinc-50 dark:bg-zinc-950" />}>
       <HomeGate />
     </Suspense>
   );

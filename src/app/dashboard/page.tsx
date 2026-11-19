@@ -10,6 +10,7 @@ import { NewsCard } from "@/components/news-card";
 import { NewsCountBadge } from "@/components/news-count-badge";
 import { PAGE_SIZE, Pagination } from "@/components/pagination";
 import { SearchForm } from "@/components/search-form";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { db } from "@/db";
 import { articles, categories } from "@/db/schema";
 import { ensureDefaultCategories } from "@/lib/default-categories";
@@ -104,6 +105,7 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
           <span className="whitespace-nowrap text-lg font-bold tracking-tight">AI 뉴스 수집기</span>
           <div className="flex items-center gap-4">
             <FetchNewsButton />
+            <ThemeToggle />
             <UserButton />
           </div>
         </div>

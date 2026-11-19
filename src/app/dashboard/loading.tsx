@@ -1,5 +1,6 @@
 import { Footer } from "@/components/footer";
 import { NewsCardSkeleton } from "@/components/news-card-skeleton";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const SKELETON_COUNT = 6;
 
@@ -7,8 +8,9 @@ export default function DashboardLoading() {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
-        <div className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <span className="whitespace-nowrap text-lg font-bold tracking-tight">AI 뉴스 수집기</span>
+          <ThemeToggle />
         </div>
       </header>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">

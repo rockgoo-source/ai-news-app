@@ -9,7 +9,7 @@
 - **한 화면에 강조는 하나**: 주 버튼(뉴스 가져오기)만 색을 채우고 나머지는 중립색. 단, hover·포커스 피드백(테두리·글자색이 인디고로 바뀜)은 채움이 아니므로 예외로 허용한다.
 - **읽기 우선**: 한국어 본문은 `leading-relaxed` 이상(뉴스 카드 요약은 `leading-7`), 줄 길이는 카드 폭으로 제한한다.
 - **장식 최소화**: 그림자는 약하게, 테두리는 1px 연한 회색, 둥근 모서리는 일관되게.
-- **라이트/다크 모두 지원**: 색은 토큰(`bg-background`, `text-foreground`)과 `dark:` 변형을 함께 쓴다.
+- **라이트/다크 모두 지원**: 색은 토큰(`bg-background`, `text-foreground`)과 `dark:` 변형을 함께 쓴다. `dark:`는 시스템 설정이 아니라 `<html class="dark">` 클래스 기준이다(`globals.css`의 `@custom-variant dark`). 헤더의 테마 토글로 전환한다(4.1.1).
 
 ## 2. 토큰
 
@@ -58,7 +58,7 @@
 ```
 
 - 콘텐츠 최대 폭 `max-w-6xl`, 좌우 패딩 `px-4 sm:px-6`.
-- 헤더는 상단 고정. 왼쪽에 앱 이름, 오른쪽에 **뉴스 가져오기** 버튼과 Clerk `UserButton`.
+- 헤더는 상단 고정. 왼쪽에 앱 이름, 오른쪽에 **뉴스 가져오기** 버튼, 테마 토글, Clerk `UserButton` 순서.
 
 ## 4. 컴포넌트
 
@@ -68,6 +68,14 @@
 - **뉴스 가져오기**(주 버튼):
   `rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50`
 - 가져오는 중에는 버튼을 비활성화하고 라벨을 "가져오는 중…"으로 바꾼다(스피너 선택).
+
+### 4.1.1 테마 토글 (헤더 오른쪽 위)
+
+- `theme-toggle.tsx`: 클릭할 때마다 `<html>`의 `dark` 클래스를 켜고 끄며 `localStorage`의 `theme`(`dark`/`light`)에 저장한다. 저장값이 없으면 시스템 설정(`prefers-color-scheme`)을 따른다.
+- 첫 페인트 전에 `layout.tsx`의 `<head>` 인라인 스크립트(`src/lib/theme.ts`의 `themeInitScript`)가 클래스를 붙여 깜빡임이 없다. `<html>`에는 `suppressHydrationWarning`.
+- 스타일: 중립색 아이콘 버튼 `inline-flex size-9 items-center justify-center rounded-lg border border-zinc-300 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800`. 라이트 모드에서는 달, 다크 모드에서는 해 아이콘(`dark:hidden` / `hidden dark:block`으로 CSS 전환, 상태 없음).
+- 접근성: `sr-only` 라벨 "다크 모드로 전환" / "라이트 모드로 전환"도 같은 방식으로 바뀐다.
+- 대시보드 헤더와 `loading.tsx` 헤더 모두에 둔다.
 
 ### 4.2 탭
 
@@ -173,7 +181,7 @@
 - **빈 상태**: 카드 영역 가운데에 안내 문구와 행동 유도.
   예) "아직 가져온 뉴스가 없어요. 오른쪽 위 ‘뉴스 가져오기’를 눌러보세요."
   `rounded-xl border border-dashed border-zinc-300 py-16 text-center text-sm text-zinc-500`
-- **로딩**: 카드 모양 스켈레톤 6개(`animate-pulse`, `bg-zinc-200 dark:bg-zinc-800` 막대). `src/app/dashboard/loading.tsx`가 헤더(앱 이름만)·제목과 함께 `news-card-skeleton.tsx`를 6개 그리며, 대시보드 이동·필터·검색·페이지 전환 중 표시된다(`role="status"` `aria-busy`).
+- **로딩**: 카드 모양 스켈레톤 6개(`animate-pulse`, `bg-zinc-200 dark:bg-zinc-800` 막대). `src/app/dashboard/loading.tsx`가 헤더(앱 이름과 테마 토글)·제목과 함께 `news-card-skeleton.tsx`를 6개 그리며, 대시보드 이동·필터·검색·페이지 전환 중 표시된다(`role="status"` `aria-busy`).
 - **오류**: 목록 위에 `rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700` 배너. 다크는 `dark:border-red-900 dark:bg-red-950 dark:text-red-300`.
 - **필터 결과 없음**: "이 카테고리에는 뉴스가 없어요."
 
