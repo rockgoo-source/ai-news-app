@@ -4,19 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 상태
 
-`PRD.md`(한국어)가 요구사항의 기준 문서다. 현재는 `create-next-app` 기본 템플릿에 Clerk 로그인(모달)만 붙은 상태이고, 뉴스 수집·저장 등 앱 기능은 아직 없다. 필요한 패키지(Drizzle, Neon, Anthropic SDK, RSS 파서 등)는 해당 단계에서 설치한다.
+`PRD.md`(한국어)가 요구사항의 기준 문서다. 현재 1~8단계가 모두 완료됐다(Clerk 로그인, Neon/Drizzle, 카테고리 CRUD, RSS 수집·Claude 처리, 카드 UI, Notion·DB 저장). 이 밖에 기사 삭제, 키워드 검색, 페이지네이션, 뉴스 개수 배지, 다크 모드 토글, 푸터도 구현됐다. 검증(7단계)과 Vercel 배포(8단계)도 마쳤고, 화면의 탭 2개만 아직 없다. 프로젝트 소개·설치·환경 변수·Notion 준비 방법은 `README.md`에 있다.
 
-**1단계 완료(`auth` 브랜치)**: Next.js 초기화, Clerk 연동(`src/proxy.ts`, `ClerkProvider`, 로그인 모달) 완료. 로그인은 `/sign-in`·`/sign-up` 페이지 없이 **모달**로만 처리한다. 미로그인 접속 시 `AuthGate`(`src/components/auth-gate.tsx`)가 로그인 모달을 자동으로 열고, 화면 분기는 `<Show when="signed-in|signed-out">`로 한다(Clerk 7에서 `SignedIn`/`SignedOut`은 제거됨). `proxy.ts`는 `/api/*`만 `auth.protect()`로 보호하고 페이지는 공개한다. 새 API 라우트는 `createRouteMatcher` 외에 라우트 안에서도 `auth()`로 `userId`를 확인한다.
+**인증(1단계)**: Next.js 초기화, Clerk 연동(`src/proxy.ts`, `ClerkProvider`, 로그인 모달) 완료. 로그인은 `/sign-in`·`/sign-up` 페이지 없이 **모달**로만 처리한다. 미로그인 접속 시 `AuthGate`(`src/components/auth-gate.tsx`)가 로그인 모달을 자동으로 열고, 화면 분기는 `<Show when="signed-in|signed-out">`로 한다(Clerk 7에서 `SignedIn`/`SignedOut`은 제거됨). `proxy.ts`는 `/api/*`만 `auth.protect()`로 보호하고 페이지는 공개한다. 새 API 라우트는 `createRouteMatcher` 외에 라우트 안에서도 `auth()`로 `userId`를 확인한다.
 
 ### 구현 순서 (PRD 12)
 1. Next.js 초기화, Clerk, 보호 라우트 (완료)
 2. Neon, Drizzle 스키마와 마이그레이션 (완료)
-3. 카테고리 CRUD
-4. RSS 수집, 중복 제거, Claude 처리
-5. 카드 UI, 탭, 카테고리 필터
-6. Notion MCP 저장과 DB 저장
-7. 검증: 로그인 → 가져오기 → 분류 확인 → 필터 → 카테고리 수정·삭제 → Notion 저장 확인
-8. Vercel 배포
+3. 카테고리 CRUD (완료)
+4. RSS 수집, 중복 제거, Claude 처리 (완료)
+5. 카드 UI, 카테고리 필터 (완료, 탭은 미구현)
+6. Notion 저장(REST API)과 DB 저장 (완료)
+7. 검증: 로그인 → 가져오기 → 분류 확인 → 필터 → 카테고리 수정·삭제 → Notion 저장 확인 (완료)
+8. Vercel 배포 (완료)
 
 ## 명령어
 
@@ -28,6 +28,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 슬래시 명령 (`.claude/commands/`)
 - `/new-branch <이름>` — main에서 새 브랜치만 만든다.
 - `/news-workflow <브랜치이름>` (`news-workflow.md`) — 새 기능 개발 전체 흐름: main 확인(아니면 경고 후 이동 여부 질문) → 브랜치 생성(이름이 없으면 기능을 물어보고 영어 소문자-하이픈 이름 제안) → "이제 개발을 시작하세요!" 안내와 기술 스택·컨벤션 재안내 → 사용자가 `완료`/`done`을 입력하면 변경 파일 목록과 커밋 메시지 제안, 확인 후 커밋하고 main에 병합 → 작업 요약. 새 기능은 이 명령으로 시작한다.
+
+### 에이전트·스킬·훅·워크플로
+- `.claude/agents/convention-checker.md` — 코드 수정 후 커밋 전에 `git diff main`으로 컨벤션을 검토하는 서브에이전트.
+- `.claude/skills/convention-check/` — 컨벤션 검토 스킬(`SKILL.md`, `conventions.md`).
+- `.claude/settings.json` — Edit/Write 후 `.js/.jsx/.ts/.tsx` 파일을 Prettier로 자동 포맷하는 훅.
+- `.github/workflows/` — Claude PR Assistant(`claude.yml`)와 Claude Code Review(`claude-code-review.yml`).
 
 ## Next.js 주의사항
 
@@ -44,7 +50,7 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 | 인증 | Clerk |
 | DB | Neon (Postgres) + Drizzle ORM |
 | 번역·요약·분류 | Claude API, Sonnet 5.5 (`claude-sonnet-5-5`) |
-| Notion 저장 | Notion MCP 서버 |
+| Notion 저장 | Notion REST API (`src/lib/notion.ts`) |
 | 배포 | Vercel |
 
 ## 제품 개요
@@ -56,7 +62,7 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 ### 인증·보안 (PRD 3, 9)
 - 로그인한 사용자만 사용 가능. 앱 실행 시 Clerk 로그인이 먼저 필요하다.
 - 저장 뉴스와 카테고리는 Clerk `user_id` 기준으로 사용자별 분리. **모든 API는 Clerk 인증을 확인하고 자기 `user_id`의 데이터만 접근**한다.
-- API 키(Claude, Notion, Neon, Clerk)는 환경 변수(`.env.local`)로 관리하고 클라이언트에 노출하지 않는다 (`NEXT_PUBLIC_`은 Clerk publishable key만). Clerk 변수: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` (`.env*`는 `.gitignore`로 제외됨). 모달 방식이므로 `NEXT_PUBLIC_CLERK_SIGN_IN_URL`/`SIGN_UP_URL`은 설정하지 않는다(없는 경로로 이동해 404가 난다). 시크릿 키는 대시보드의 마스킹된 값(`…`)이 아니라 전체 값을 넣는다.
+- API 키(Claude, Notion, Neon, Clerk)는 환경 변수(`.env.local`)로 관리하고 클라이언트에 노출하지 않는다 (`NEXT_PUBLIC_`은 Clerk publishable key만). 사용하는 변수: `DATABASE_URL`(Neon), `ANTHROPIC_API_KEY`, `NOTION_API_KEY`, `NOTION_DATABASE_ID`, Clerk 변수 2개. Clerk 변수: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` (`.env*`는 `.gitignore`로 제외됨). 모달 방식이므로 `NEXT_PUBLIC_CLERK_SIGN_IN_URL`/`SIGN_UP_URL`은 설정하지 않는다(없는 경로로 이동해 404가 난다). 시크릿 키는 대시보드의 마스킹된 값(`…`)이 아니라 전체 값을 넣는다.
 - Claude 호출은 서버에서만 수행하고, 응답은 JSON으로 받아 검증한다.
 
 ### 뉴스 소스 (PRD 4)
@@ -66,10 +72,10 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 
 ### 가져오기 흐름 (PRD 5.1, 5.2, 8-1)
 버튼 → 서버에서 RSS 파싱(최근 24시간) → `articles` 저장(URL 중복은 건너뜀) → 카드 표시. Claude 호출(번역·요약·분류)은 같은 요청에서 이어서 수행.
-- 가져온 뉴스는 `POST /api/articles/fetch`에서 **먼저 `articles`에 저장**한다(`onConflictDoNothing`). 이어서 이번 RSS에 있는 기사 중 `title_ko`가 NULL인 것(최대 30개, 이전 실패분 포함)을 `src/lib/process-articles.ts`가 10개씩 배치로 Claude(`src/lib/claude.ts`, `ANTHROPIC_API_KEY`)에 보내 구조화 JSON(zod 검증)으로 받아 `title_ko`·`summary_ko`·`category_id`/`suggested_category`를 채운다. Claude가 실패해도 기사는 남고 NULL이면 카드는 원문 제목과 '미분류'로 표시한다.
+- 가져온 뉴스는 `POST /api/articles/fetch`에서 **먼저 `articles`에 저장**한다(`onConflictDoNothing`). 이어서 이번 RSS에 있는 기사 중 `title_ko`가 NULL인 것(최대 30개, 이전 실패분 포함)을 `src/lib/process-articles.ts`가 10개씩 배치로 Claude(`src/lib/claude.ts`, `ANTHROPIC_API_KEY`)에 보내 구조화 JSON(zod 검증)으로 받아 `title_ko`·`summary_ko`·`category_id`를 채운다. 이 라우트는 `maxDuration = 60`이다. Claude가 실패해도 기사는 남고 NULL이면 카드는 원문 제목과 '미분류'로 표시한다.
 - 중복 기준은 같은 URL(GUID)뿐. 의미상 중복 판정은 하지 않는다.
 - 이미 저장한 기사는 다시 가져와도 중복 저장하지 않는다. '저장됨' 표시는 Notion 저장(`notion_page_url` 존재) 기준이다.
-- Claude 처리: 제목은 한국어 번역, 요약은 RSS 내용 기반 한국어 3~4줄(원문 페이지 스크래핑 금지). 카테고리는 **항상 사용자의 현재 카테고리 목록(기본 4개 + 사용자가 추가한 것) 중에서만** 고르며(JSON Schema enum으로 강제), 새 카테고리는 제안하지 않는다. 가져오기 때마다 번역은 됐지만 `category_id`가 NULL인 기사(카테고리를 새로 추가한 경우 포함, 최대 30개)도 현재 목록 기준으로 다시 분류한다. `articles.suggested_category` 컬럼은 현재 쓰지 않는다(PRD의 '새 카테고리 제안'은 보류 — PRD 갱신 필요).
+- Claude 처리: 제목은 한국어 번역, 요약은 RSS 내용 기반 한국어 3~4줄(원문 페이지 스크래핑 금지). 카테고리는 **항상 사용자의 현재 카테고리 목록(기본 4개 + 사용자가 추가한 것) 중에서만** 고르며(JSON Schema enum으로 강제), 새 카테고리는 제안하지 않는다. 가져오기 때마다 번역은 됐지만 `category_id`가 NULL인 기사(카테고리를 새로 추가한 경우 포함, 최대 30개)도 현재 목록 기준으로 다시 분류한다. `articles.suggested_category` 컬럼은 현재 쓰지 않는다(`0002` 마이그레이션으로 남아 있고, PRD의 '새 카테고리 제안'은 보류 — PRD 갱신 필요).
 
 ### 저장 흐름 (PRD 5.3, 5.6, 8-2)
 - 카드의 '뉴스 저장' 버튼(`POST /api/articles/[id]/save`) 하나로 Notion과 DB에 함께 저장한다. 별도의 '저장하기' 버튼은 없다.
@@ -77,7 +83,7 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 - Notion 저장이 성공하면 **같은 요청에서** Neon `articles`에도 저장한다(새 카테고리면 `categories` 추가, `notion_page_url` 기록).
 
 ### 데이터 모델 (PRD 7, Neon 반영 완료)
-정의는 `src/db/schema.ts`, 마이그레이션은 `drizzle/`. `npx drizzle-kit generate` / `migrate`로 관리한다.
+정의는 `src/db/schema.ts`, 마이그레이션은 `drizzle/`(`0000` 초기, `0001` Claude 처리 전 NULL 허용, `0002` `suggested_category` 추가). `npx drizzle-kit generate` / `migrate`로 관리한다.
 - `categories`: id, user_id, name, created_at — `(user_id, name)` 고유
 - `articles`: id, user_id, source, url, original_title, title_ko, summary_ko, category_id, suggested_category, published_at, saved_at, notion_page_url — `(user_id, url)` 고유. `title_ko`·`summary_ko`·`category_id`는 Claude 처리 전까지 NULL 허용(`0001` 마이그레이션). `category_id`는 `categories`를 `on delete restrict`로 참조.
 
@@ -88,8 +94,10 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 - 저장된 기사가 있는 카테고리는 삭제 불가. 기사가 없는 카테고리만 삭제 가능.
 
 ### 화면 구성 (PRD 5.3, 5.4)
-- 탭 2개: '새로 가져온 뉴스'(임시) / '저장한 뉴스'(DB). 두 탭 모두 카테고리 필터 제공.
+- 현재 구현: `/dashboard` 한 화면에서 `articles` 전체를 최신순 카드로 보여준다. 카테고리 필터(`?category=`), 키워드 검색(`?q=`, 제목·원문 제목·요약 부분 일치), 12개씩 페이지네이션(`?page=`), 제목 옆 총 뉴스 개수 배지, 헤더의 다크 모드 토글, 푸터가 있다.
+- 탭 2개('새로 가져온 뉴스'(임시) / '저장한 뉴스'(DB), 두 탭 모두 카테고리 필터)는 PRD에 있지만 **아직 구현되지 않았다**(`ui.md`에도 "탭은 아직 없다"로 기록).
 - 카드 표시 항목: 한국어 제목, 요약, 카테고리, 출처, 날짜. '원문보기'는 새 탭에서 원문을 연다.
+- 기사 삭제: 카드 오른쪽 위 ✕ 버튼(`DELETE /api/articles/[id]`)이 본인 기사를 DB에서만 지운다. Notion 페이지는 그대로 둔다.
 
 ### UI 가이드
 @ui.md
@@ -101,8 +109,8 @@ Next.js 16 / React 19 / Tailwind 4를 사용한다. 학습 데이터와 API·규
 ## 범위 밖 (PRD 10)
 의미상 중복 기사 묶기, 원문 페이지 스크래핑·전문 요약, 자동 주기 수집(수동 '뉴스 가져오기'만 지원).
 
-## 미정 사항 (PRD 11)
-- 대상 Notion 데이터베이스의 속성(컬럼) 구성
-- Notion MCP 연결 방식(원격 OAuth 또는 로컬 서버 + 통합 토큰)
+## 확정된 PRD 11 미정 사항
+- Notion DB 속성은 제목·요약·출처(url)·카테고리(select)·날짜로 확정했다.
+- Notion 연동은 MCP가 아니라 REST API + 통합 토큰(`NOTION_API_KEY`)으로 구현했다.
 
-이 항목들이 확정되면 이 문서와 PRD를 함께 갱신한다.
+PRD.md는 아직 이 결정을 반영하지 않았으므로 PRD 11과 6(기술 스택), '새 카테고리 제안'을 코드에 맞게 갱신해야 한다.
